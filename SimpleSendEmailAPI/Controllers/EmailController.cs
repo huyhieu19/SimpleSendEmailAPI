@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MimeKit;
 using MimeKit.Text;
+using Org.BouncyCastle.Asn1.Ocsp;
+using SimpleSendEmailAPI.Model;
+using SimpleSendEmailAPI.Services;
 
 namespace SimpleSendEmailAPI.Controllers
 {
@@ -10,23 +13,17 @@ namespace SimpleSendEmailAPI.Controllers
     [ApiController]
     public class EmailController : ControllerBase
     {
-        [HttpPost]
-        public IActionResult SendEmail(string body)
+        private readonly IEmailService _emailService;
+
+        public EmailController(IEmailService emailService)
         {
-            var email = new MimeMessage();
-            email.From.Add(MailboxAddress.Parse("davon.lowe@ethereal.email"));
-            email.To.Add(MailboxAddress.Parse("davon.lowe@ethereal.email"));
-            email.Subject = "abc";
-            email.Body = new TextPart(TextFormat.Html) { Text = body };
-            using var smtp = new SmtpClient();
-
-            smtp.Connect("smtp.ethereal.email", 587, MailKit.Security.SecureSocketOptions.StartTls);
-            smtp.Authenticate("davon.lowe@ethereal.email", "yfres2mGDJdsTsaFBB");
-            smtp.Send(email);
-            smtp.Disconnect(true);
-            return Ok("send email succeed");
-
-
+            _emailService = emailService;
         }
+        [HttpPost]
+        public bool SendEmail(EmailDto emailDto)
+        {
+            _emailService.SendEmail(emailDto);
+            return true;
+        } 
     }
 }
